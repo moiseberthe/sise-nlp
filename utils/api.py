@@ -3,7 +3,6 @@ from env import CLIENT_ID, CLIENT_SECRET
 
 
 def get_pole_emploi_access_token():
-    print(CLIENT_ID, CLIENT_SECRET)
     url = "https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=%2Fpartenaire"
     headers = {
         "Content-Type": "application/x-www-form-urlencoded"

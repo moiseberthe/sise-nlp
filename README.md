@@ -2,7 +2,8 @@
 
 ## Make migration
 
-Create and database
+Create and feed database
+
 ```bash
 python app.py
 ```
