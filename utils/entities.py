@@ -69,6 +69,9 @@ class Source(Entity):
 class Contrat(Entity):
     __tablename__ = 'contrats'
     name = Column(String(50))
+    
+    # annonces = relationship('Annonce', back_populates='contrat')
+
 
 class Annonce(Entity):
     __tablename__ = 'annonces'
@@ -86,4 +89,6 @@ class Annonce(Entity):
     
     contrat_id = Column(Integer, ForeignKey('contrats.id'), nullable=False)
     source_id = Column(Integer, ForeignKey('sources.id'), nullable=False)
+
+    # contrat = relationship('Contrat', back_populates='annonces')
     # teletravail = Column(BOOLEAN, nullable=False)
