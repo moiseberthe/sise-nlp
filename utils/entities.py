@@ -40,6 +40,11 @@ class Entity(Base):
             db.delete(entity)
             db.commit()
             return entity
+    
+    @classmethod
+    def query(cls):
+        return db.query(cls)
+    
 
 class Region(Entity):
     __tablename__ = 'regions'
@@ -69,7 +74,7 @@ class Source(Entity):
 class Contrat(Entity):
     __tablename__ = 'contrats'
     name = Column(String(50))
-    
+
     # annonces = relationship('Annonce', back_populates='contrat')
 
 
