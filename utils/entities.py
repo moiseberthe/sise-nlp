@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, BOOLEAN
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, DATETIME
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import OperationalError
@@ -49,15 +49,17 @@ class Entity(Base):
 class Region(Entity):
     __tablename__ = 'regions'
     
-    name = Column(String(50))
+    code = Column(String(3), nullable=False, unique=True)
+    name = Column(String(50), nullable=False)
 
     departements = relationship('Departement', back_populates='region')
 
 class Departement(Entity):
     __tablename__ = 'departements'
     
-    name = Column(String(50))
-    region_id = Column(Integer, ForeignKey('regions.id'), nullable=False)
+    code = Column(String(3), nullable=False, unique=True)
+    name = Column(String(50), nullable=False)
+    region_code = Column(Integer, ForeignKey('regions.code'), nullable=False)
     
     region = relationship('Region', back_populates='departements')
 
@@ -71,11 +73,18 @@ class Source(Entity):
     __tablename__ = 'sources'
     name = Column(String(50))
 
+    @classmethod
+    def sources(cls):
+        return { 'apec': 1, 'pole-emploi': 2, 'linkedin': 3 }
+
 class Contrat(Entity):
     __tablename__ = 'contrats'
     name = Column(String(50))
 
     # annonces = relationship('Annonce', back_populates='contrat')
+    @classmethod
+    def contracts(cls):
+        return {'cdi': 1, 'cdd': 2, 'stage': 3, 'alternance': 4}
 
 
 class Annonce(Entity):
@@ -85,7 +94,7 @@ class Annonce(Entity):
     title = Column(String(250))
     company_name = Column(String(250))
     location = Column(String(250))
-    date = Column(String(250))
+    date = Column(DATETIME())
     descripiton = Column(String(250))
     poste = Column(String(250))
     activity = Column(String(250))
@@ -94,6 +103,3 @@ class Annonce(Entity):
     
     contrat_id = Column(Integer, ForeignKey('contrats.id'), nullable=False)
     source_id = Column(Integer, ForeignKey('sources.id'), nullable=False)
-
-    # contrat = relationship('Contrat', back_populates='annonces')
-    # teletravail = Column(BOOLEAN, nullable=False)
