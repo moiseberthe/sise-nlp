@@ -161,7 +161,7 @@ def pole_emploi_scraper(nb_jobs=200):
                 'title': job['intitule'],
                 'company': job['entreprise'].get('nom', 'Unknown'),
                 'contrat': job['typeContrat'].strip().lower().split()[0],
-                'location': pole_emploi_city_name(job['lieuTravail']['libelle']),
+                'location': job['lieuTravail'].get('codePostal', pole_emploi_city_name(job['lieuTravail']['libelle'])),
                 'date': job['dateCreation'].split('T')[0],
                 'description': job['description'],
                 'profile': '',

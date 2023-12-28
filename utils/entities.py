@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, DATETIME, Float
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, DATETIME, Float, or_
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import OperationalError
@@ -74,6 +74,21 @@ class City(Entity):
     department_code = Column(String(3), ForeignKey('departments.code'), nullable=False)
 
     department = relationship('Department', back_populates='cities')
+    annonces = relationship('Annonce', back_populates='city')
+
+    @classmethod
+    def find_by_name(cls, name):
+        name = name.lower().strip()
+        name = name.replace('st.', 'Saint')
+        name = name.replace('st-', 'Saint-')
+        name = name.replace("’", "'")
+        
+        city = City.query().filter(
+            or_(City.name.like(name), City.zip_code.like(name))
+        ).all()
+        if(len(city) > 0):
+            return city[0]
+        return None
 
 class Source(Entity):
     __tablename__ = 'sources'
@@ -98,7 +113,6 @@ class Annonce(Entity):
     url = Column(String(250))
     title = Column(String(250))
     company_name = Column(String(250))
-    location = Column(String(250))
     date = Column(DATETIME())
     descripiton = Column(String(250))
     poste = Column(String(250))
@@ -108,3 +122,8 @@ class Annonce(Entity):
     
     contrat_id = Column(Integer, ForeignKey('contrats.id'), nullable=False)
     source_id = Column(Integer, ForeignKey('sources.id'), nullable=False)
+    city_id = Column(Integer, ForeignKey('cities.id'), nullable=False)
+
+    city = relationship('City', back_populates='annonces')
+
+# end

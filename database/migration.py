@@ -3,29 +3,30 @@ from database.data import regions, departments, sources, contracts
 from datetime import datetime
 import json
 
+
 def insert_jobs(jobs):
     for job in jobs:
-        try:
-            date = datetime.strptime(job['date'], '%Y-%m-%d')
-        except:
-            date = datetime.now()
-
-        annonce = Annonce(
-            url = job['url'],
-            title = job['title'],
-            company_name = job['company'],
-            location = job['location'],
-            date = date,
-            descripiton = job['description'],
-            poste = job['poste'],
-            activity = job['activity'],
-            profile = job['profile'],
-            skills = '|'.join(job['skills']),
-            contrat_id =   Contrat.contracts().get(job['contrat'], 5),
-            source_id = Source.sources()[job['source']],
-        )
-        annonce.create()
-
+        city = City.find_by_name(job['location'])
+        if city is not None:
+            try:
+                date = datetime.strptime(job['date'], '%Y-%m-%d')
+            except:
+                date = datetime.now()
+            
+            Annonce(
+                url = job['url'],
+                title = job['title'],
+                company_name = job['company'],
+                city_id = city.id,
+                date = date,
+                descripiton = job['description'],
+                poste = job['poste'],
+                activity = job['activity'],
+                profile = job['profile'],
+                skills = '|'.join(job['skills']),
+                contrat_id =   Contrat.contracts().get(job['contrat'], 5),
+                source_id = Source.sources()[job['source']],
+            ).create()
 
 def make_migration():
     Region.create_table()
@@ -69,7 +70,7 @@ def make_migration():
             gps_lat=city['gps_lat'],
             gps_lng=city['gps_lng'],
         ).create()
-        
+
     # Insertion des annonces de job
     with open('./data/processed/all-jobs.json', 'r+') as f:
         jobs = json.load(f)
