@@ -24,7 +24,7 @@ regions = [
   { 'code': 'COM', 'name': 'Collectivités d\'Outre-Mer' }
 ]
 
-departements = [
+departments = [
   {
     "code": "01",
     "name": "Ain",
@@ -571,3 +571,5 @@ departements = [
     "region_code": "COM"
   }
 ]
+
+# end

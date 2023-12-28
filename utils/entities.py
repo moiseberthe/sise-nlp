@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, DATETIME
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, DATETIME, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import OperationalError
@@ -44,7 +44,6 @@ class Entity(Base):
     @classmethod
     def query(cls):
         return db.query(cls)
-    
 
 class Region(Entity):
     __tablename__ = 'regions'
@@ -52,22 +51,29 @@ class Region(Entity):
     code = Column(String(3), nullable=False, unique=True)
     name = Column(String(50), nullable=False)
 
-    departements = relationship('Departement', back_populates='region')
+    departments = relationship('Department', back_populates='region')
 
-class Departement(Entity):
-    __tablename__ = 'departements'
+class Department(Entity):
+    __tablename__ = 'departments'
     
     code = Column(String(3), nullable=False, unique=True)
     name = Column(String(50), nullable=False)
-    region_code = Column(Integer, ForeignKey('regions.code'), nullable=False)
+    region_code = Column(String(3), ForeignKey('regions.code'), nullable=False)
     
-    region = relationship('Region', back_populates='departements')
+    region = relationship('Region', back_populates='departments')
+    cities = relationship('City', back_populates='department')
 
 class City(Entity):
     __tablename__ = 'cities'
-    name = Column(String(50))
+    
+    name = Column(String(250))
+    zip_code = Column(String(6))
+    gps_lat = Column(Float())
+    gps_lng = Column(Float())
 
-    departement_id = Column(Integer, ForeignKey('departements.id'), nullable=False)
+    department_code = Column(String(3), ForeignKey('departments.code'), nullable=False)
+
+    department = relationship('Department', back_populates='cities')
 
 class Source(Entity):
     __tablename__ = 'sources'
@@ -85,7 +91,6 @@ class Contrat(Entity):
     @classmethod
     def contracts(cls):
         return {'cdi': 1, 'cdd': 2, 'stage': 3, 'alternance': 4}
-
 
 class Annonce(Entity):
     __tablename__ = 'annonces'

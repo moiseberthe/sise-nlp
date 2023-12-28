@@ -1,5 +1,5 @@
-from utils.entities import Region, Departement, City, Annonce, Source, Contrat
-from database.data import regions, departements, sources, contracts
+from utils.entities import Region, Department, City, Annonce, Source, Contrat
+from database.data import regions, departments, sources, contracts
 from datetime import datetime
 import json
 
@@ -26,9 +26,10 @@ def insert_jobs(jobs):
         )
         annonce.create()
 
+
 def make_migration():
     Region.create_table()
-    Departement.create_table()
+    Department.create_table()
     City.create_table()
     Source.create_table()
     Contrat.create_table()
@@ -49,15 +50,25 @@ def make_migration():
             name=region['name']
         ).create()
     
-    # Insertion des departements
-    for departement in departements:
-        Departement(
-            code=departement['code'],
-            name=departement['name'],
-            region_code=departement['region_code']
+    # Insertion des departments
+    for department in departments:
+        Department(
+            code=department['code'],
+            name=department['name'],
+            region_code=department['region_code']
         ).create()
 
     # Insertion des villes
+    with open('./data/location/cities.json', 'r+') as f:
+        cities = json.load(f)
+    for city in cities:
+        City(
+            department_code=city['department_code'],
+            zip_code=city['zip_code'],
+            name=city['name'],
+            gps_lat=city['gps_lat'],
+            gps_lng=city['gps_lng'],
+        ).create()
         
     # Insertion des annonces de job
     with open('./data/processed/all-jobs.json', 'r+') as f:
