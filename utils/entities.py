@@ -114,7 +114,7 @@ class Annonce(Entity):
     title = Column(String(250))
     company_name = Column(String(250))
     date = Column(DATETIME())
-    descripiton = Column(String(250))
+    description = Column(String(250))
     poste = Column(String(250))
     activity = Column(String(250))
     profile = Column(String(250))

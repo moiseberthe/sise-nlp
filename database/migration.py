@@ -19,7 +19,7 @@ def insert_jobs(jobs):
                 company_name = job['company'],
                 city_id = city.id,
                 date = date,
-                descripiton = job['description'],
+                description = job['description'],
                 poste = job['poste'],
                 activity = job['activity'],
                 profile = job['profile'],
