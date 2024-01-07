@@ -1,6 +1,7 @@
 import sys
 from fastapi import FastAPI, HTTPException, Query
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 sys.path.append('..')
 from utils.entities import Region, Department, City, Annonce, Source, Contrat, Activity, Job
 sys.path.pop()
@@ -43,6 +44,22 @@ def get_city(city_id: int):
     if city is None:
         raise HTTPException(status_code=404, detail="City not found")
     return city
+
+@app.get("/cities/")
+def get_all_cities(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(100, description="Limit", le=40000)):
+    
+    cities = (
+        City.db().query(City, func.count(Annonce.id).label("nb"))
+        .outerjoin(Annonce, City.id == Annonce.city_id)
+        .group_by(City.department_code)
+        .having(func.count(Annonce.id) > 0)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+    if len(cities) == 0:
+        raise HTTPException(status_code=404, detail="No city found")
+    return [{**city.__dict__, **{"count": nb}} for city, nb in cities]
 
 @app.get("/sources/{source_id}")
 def get_source(source_id: int):

@@ -44,6 +44,10 @@ class Entity(Base):
     @classmethod
     def query(cls):
         return db.query(cls)
+    
+    @classmethod
+    def db(cls):
+        return db
 
 class Region(Entity):
     __tablename__ = 'regions'

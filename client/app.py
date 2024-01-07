@@ -4,6 +4,7 @@ import streamlit as st
 from controller.dbcontroller import *
 import pandas as pd
 import numpy as np
+import requests
 
 #offres
 offres   = ""
@@ -33,16 +34,13 @@ st.write("Les filtres: ")
 mois = st.slider('Mois concernés', 1, 31, (1, 31))
 options = st.multiselect('types de contrat', contrats)
 
-df = pd.DataFrame({
-    "col1": np.random.randn(1000) / 50 + 37.76,
-    "col2": np.random.randn(1000) / 50 - 122.4,
-    "col3": np.random.randn(1000) * 100,
-    "col4": np.random.rand(1000, 4).tolist(),
-})
+cities = requests.get('http://127.0.0.1:8000/cities/?offset=0&limit=4000')
+cities = cities.json()
+df = pd.DataFrame(cities)
+df['count'] = df['count'] * 100
 
 st.map(df,
-    latitude='col1',
-    longitude='col2',
-    size='col3',
-    color='col4'
+    latitude='gps_lat',
+    longitude='gps_lng',
+    size='count'
 )
