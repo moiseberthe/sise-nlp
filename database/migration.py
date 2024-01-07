@@ -1,31 +1,53 @@
-from utils.entities import Region, Department, City, Annonce, Source, Contrat
+from utils.entities import Region, Department, City, Annonce, Source, Contrat, Activity, Job
 from database.data import regions, departments, sources, contracts
 from datetime import datetime
 import json
 
+def find_or_create_activity(name):
+    name = name.capitalize().strip().replace('œ', "oe")
+    activity = Activity.find_by_name(name[1:])
+    if activity is None:
+        activity = Activity(name=name).create()
+    return activity
 
-def insert_jobs(jobs):
-    for job in jobs:
-        city = City.find_by_name(job['location'])
+def find_or_create_job(name):
+    name = name.capitalize().strip().replace('œ', "oe")
+
+    job = Job.find_by_name(name[1:])
+    if job is None:
+        job = Job(name=name).create()
+    return job
+
+def insert_jobs(annonces):
+    for annonce in annonces:
+        # todo: remove these two lines below
+        if(annonce['source'] == 'linkedin'):
+            return
+        
+        city = City.find_by_name(annonce['location'])
+        
         if city is not None:
+            activity = find_or_create_activity(annonce['activity'])
+            job = find_or_create_job(annonce['poste'])
+
             try:
-                date = datetime.strptime(job['date'], '%Y-%m-%d')
+                date = datetime.strptime(annonce['date'], '%Y-%m-%d')
             except:
                 date = datetime.now()
             
             Annonce(
-                url = job['url'],
-                title = job['title'],
-                company_name = job['company'],
-                city_id = city.id,
-                date = date,
-                description = job['description'],
-                poste = job['poste'],
-                activity = job['activity'],
-                profile = job['profile'],
-                skills = '|'.join(job['skills']),
-                contrat_id =   Contrat.contracts().get(job['contrat'], 5),
-                source_id = Source.sources()[job['source']],
+                url=annonce['url'],
+                title=annonce['title'],
+                company_name=annonce['company'],
+                city_id=city.id,
+                date=date,
+                description=annonce['description'],
+                job_id=job.id,
+                activity_id=activity.id,
+                profile=annonce['profile'],
+                skills='|'.join(annonce['skills']),
+                contrat_id=Contrat.contracts().get(annonce['contrat'], 5),
+                source_id=Source.sources()[annonce['source']],
             ).create()
 
 def make_migration():
@@ -34,6 +56,8 @@ def make_migration():
     City.create_table()
     Source.create_table()
     Contrat.create_table()
+    Activity.create_table()
+    Job.create_table()
     Annonce.create_table()
 
     # Insertion des sources

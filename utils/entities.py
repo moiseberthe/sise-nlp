@@ -107,6 +107,36 @@ class Contrat(Entity):
     def contracts(cls):
         return {'cdi': 1, 'cdd': 2, 'stage': 3, 'alternance': 4}
 
+class Activity(Entity):
+    __tablename__ = "activities"
+
+    name = Column(String(250))
+    annonces = relationship('Annonce', back_populates='activity')
+
+    @classmethod
+    def find_by_name(cls, name):
+        name = name.lower().strip()
+        
+        activity = cls.query().filter(cls.name.like(f"%{name}%")).all()
+        if(len(activity) > 0):
+            return activity[0]
+        return None
+
+class Job(Entity):
+    __tablename__ = 'jobs'
+
+    name = Column(String(250))
+    annonces = relationship('Annonce', back_populates='job')
+
+    @classmethod
+    def find_by_name(cls, name):
+        name = name.lower().strip()
+        
+        job = cls.query().filter(cls.name.like(f"%{name}%")).all()
+        if(len(job) > 0):
+            return job[0]
+        return None
+
 class Annonce(Entity):
     __tablename__ = 'annonces'
 
@@ -115,15 +145,17 @@ class Annonce(Entity):
     company_name = Column(String(250))
     date = Column(DATETIME())
     description = Column(String(250))
-    poste = Column(String(250))
-    activity = Column(String(250))
     profile = Column(String(250))
     skills = Column(String(250))
     
+    activity_id = Column(Integer, ForeignKey('activities.id'), nullable=False)
+    job_id = Column(Integer, ForeignKey('jobs.id'), nullable=False)
     contrat_id = Column(Integer, ForeignKey('contrats.id'), nullable=False)
     source_id = Column(Integer, ForeignKey('sources.id'), nullable=False)
     city_id = Column(Integer, ForeignKey('cities.id'), nullable=False)
 
     city = relationship('City', back_populates='annonces')
+    activity = relationship('Activity', back_populates='annonces')
+    job = relationship('Job', back_populates='annonces')
 
 # end
