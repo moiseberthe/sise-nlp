@@ -1,7 +1,8 @@
 import sys
 from fastapi import FastAPI, HTTPException, Query
+from sqlalchemy.orm import joinedload
 sys.path.append('..')
-from utils.entities import Annonce
+from utils.entities import Region, Department, City, Annonce, Source, Contrat, Activity, Job
 sys.path.pop()
 
 # Initialize FastAPI app
@@ -22,12 +23,53 @@ def get_annonce(annonce_id: int):
         raise HTTPException(status_code=404, detail="Annonce not found")
     return annonce
 
-@app.get("/annonces/by-contract/{contract_id}")
-def get_annonces_by_contract_type(contract_id: int):
-    annonces = Annonce.query().filter(Annonce.contrat_id == contract_id).all()
-    return annonces
+@app.get("/regions/{region_id}")
+def get_region(region_id: int):
+    region = Region.query().filter(Region.id == region_id).options(joinedload(Region.departments)).first()
+    if region is None:
+        raise HTTPException(status_code=404, detail="Region not found")
+    return region
 
-@app.get("/annonces/by-source/{source_id}")
-def get_annonces_by_source(source_id: int):
-    annonces = Annonce.query().filter(Annonce.source_id == source_id).all()
-    return annonces
+@app.get("/departments/{department_id}")
+def get_department(department_id: int):
+    department = Department.query().filter(Department.id == department_id).options(joinedload(Department.cities)).first()
+    if department is None:
+        raise HTTPException(status_code=404, detail="Department not found")
+    return department
+
+@app.get("/cities/{city_id}")
+def get_city(city_id: int):
+    city = City.query().filter(City.id == city_id).options(joinedload(City.annonces)).first()
+    if city is None:
+        raise HTTPException(status_code=404, detail="City not found")
+    return city
+
+@app.get("/sources/{source_id}")
+def get_source(source_id: int):
+    source = Source.query().filter(Source.id == source_id).options(joinedload(Source.annonces)).first()
+    if source is None:
+        raise HTTPException(status_code=404, detail="Source not found")
+    return source
+
+@app.get("/contrats/{contrat_id}")
+def get_contrat(contrat_id: int):
+    contrat = Contrat.query().filter(Contrat.id == contrat_id).options(joinedload(Contrat.annonces)).first()
+    if contrat is None:
+        raise HTTPException(status_code=404, detail="Contrat not found")
+    return contrat
+
+@app.get("/activities/{activity_id}")
+def get_activity(activity_id: int):
+    activity = Activity.query().filter(Activity.id == activity_id).options(joinedload(Activity.annonces)).first()
+    if activity is None:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    return activity
+
+@app.get("/jobs/{job_id}")
+def get_job(job_id: int):
+    job = Job.query().filter(Job.id == job_id).options(joinedload(Job.annonces)).first()
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+# end

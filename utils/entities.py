@@ -93,6 +93,7 @@ class City(Entity):
 class Source(Entity):
     __tablename__ = 'sources'
     name = Column(String(50))
+    annonces = relationship('Annonce', back_populates='source')
 
     @classmethod
     def sources(cls):
@@ -101,6 +102,7 @@ class Source(Entity):
 class Contrat(Entity):
     __tablename__ = 'contrats'
     name = Column(String(50))
+    annonces = relationship('Annonce', back_populates='contrat')
 
     # annonces = relationship('Annonce', back_populates='contrat')
     @classmethod
@@ -154,6 +156,8 @@ class Annonce(Entity):
     source_id = Column(Integer, ForeignKey('sources.id'), nullable=False)
     city_id = Column(Integer, ForeignKey('cities.id'), nullable=False)
 
+    source = relationship('Source', back_populates='annonces')
+    contrat = relationship('Contrat', back_populates='annonces')
     city = relationship('City', back_populates='annonces')
     activity = relationship('Activity', back_populates='annonces')
     job = relationship('Job', back_populates='annonces')
