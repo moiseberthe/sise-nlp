@@ -34,7 +34,7 @@ st.write("Les filtres: ")
 mois = st.slider('Mois concernés', 1, 31, (1, 31))
 options = st.multiselect('types de contrat', contrats)
 
-cities = requests.get('http://127.0.0.1:8000/cities/?offset=0&limit=4000')
+cities = requests.get('http://nlp-server:8000/cities/?offset=0&limit=4000')
 cities = cities.json()
 df = pd.DataFrame(cities)
 df['count'] = df['count'] * 100

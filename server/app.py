@@ -9,7 +9,6 @@ sys.path.pop()
 # Initialize FastAPI app
 app = FastAPI()
 
-
 @app.get("/annonces/")
 def get_all_annonces(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(10, description="Limit", le=500)):
     annonces = Annonce.find_all(offset, limit)

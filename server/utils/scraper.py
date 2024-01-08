@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from env import CLIENT_ID, CLIENT_SECRET
+from server.env import CLIENT_ID, CLIENT_SECRET
 
 
 def get_pole_emploi_access_token():
