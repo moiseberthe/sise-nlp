@@ -8,9 +8,9 @@ Create and feed database
 python app.py
 ```
 
-# Docker project with Streamlit, FastAPI and MongoDB
+# Docker project with Streamlit, FastAPI and SQLite
 
-This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `MongoDB` in `Docker` containers.<br>
+This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `SQLite` in `Docker` containers.<br>
 
 ## Prerequisites
 
