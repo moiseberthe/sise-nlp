@@ -1,13 +1,3 @@
-# sise-nlp
-
-## Make migration
-
-Create and feed database
-
-```bash
-python app.py
-```
-
 # Docker project with Streamlit, FastAPI and SQLite
 
 This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `SQLite` in `Docker` containers.<br>
@@ -18,6 +8,14 @@ Make sure you have `Docker` and `Docker Compose` installed on your machine.
 
 - [Docker](https://www.docker.com/get-started)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+
+## Make migration
+
+Create and feed database
+
+```bash
+python app.py
+```
 
 ## Clone project
 
