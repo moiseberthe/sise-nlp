@@ -9,13 +9,13 @@ Make sure you have `Docker` and `Docker Compose` installed on your machine.
 - [Docker](https://www.docker.com/get-started)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-## Make migration
+<!-- ## Make migration
 
-Create and feed database
+Move in `server` folder
 
 ```bash
-python app.py
-```
+python migrate.py
+``` -->
 
 ## Clone project
 

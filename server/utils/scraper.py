@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from server.env import CLIENT_ID, CLIENT_SECRET
+from env import CLIENT_ID, CLIENT_SECRET
 
 
 def get_pole_emploi_access_token():
@@ -41,14 +41,23 @@ def pole_emploi_city_name(location):
         city = city
     return city.split('(')[0]
 
+def get_range(n, step=150):
+    ranges = []
+    iter = n // step + min(1, (n % step))
+    for i in range(iter):
+        min_i = (i * step)
+        max_i = min(min_i + step-1, n-1)
+        min_i = max([0, min_i])
+        ranges.append((min_i, max_i))
+    return ranges
 
-def apec_scraper(nb_pages=10):
+def apec_scraper(nb_jobs=10):
     job_page_url = 'https://www.apec.fr/candidat/recherche-emploi.html/emploi?motsCles=data&typesConvention=143684&typesConvention=143685&typesConvention=143686&typesConvention=143687'
     jobs_apec = []
     
     driver = webdriver.Chrome()
     CSS = By.CSS_SELECTOR
-
+    nb_pages = (nb_jobs // 20) + min(1, nb_jobs % 20)
     for i in range(nb_pages):
         driver.get(f'{job_page_url}&page={i}')
         if(i == 0):
@@ -60,7 +69,6 @@ def apec_scraper(nb_pages=10):
                 driver.quit()
             accept_cookies.click()
 
-        #  job_links = driver.find_elements(CSS, '.container-result div > a')
         try:
             job_links = WebDriverWait(driver, 10).until(
                 EC.presence_of_all_elements_located((CSS, ".container-result div > a"))
@@ -92,7 +100,6 @@ def apec_scraper(nb_pages=10):
                     EC.presence_of_all_elements_located((CSS, 'ul.details-offer-list.mb-20 > li'))
                 )
             except:
-                print("quiting")
                 driver.quit()
             
             # entreprise
@@ -142,6 +149,9 @@ def apec_scraper(nb_pages=10):
                 'activity': activity,
                 'source': 'apec',
             })
+            if (len(jobs_apec) == nb_jobs):
+                driver.quit()
+                return jobs_apec
     # Close the webdriver
     driver.quit()
     return jobs_apec
@@ -151,8 +161,9 @@ def pole_emploi_scraper(nb_jobs=200):
     access_token = get_pole_emploi_access_token()
     header = {'Authorization': f'Bearer {access_token}'}
     jobs_pole_emploi = []
-    for i in range(nb_jobs // 100):
-        response = requests.get(f'https://api.pole-emploi.io/partenaire/offresdemploi/v2/offres/search?range={i*100}-{((i+1) * 100) - 1}&motsCles=data', headers=header)
+    ranges = get_range(nb_jobs)
+    for _min, _max in ranges:
+        response = requests.get(f'https://api.pole-emploi.io/partenaire/offresdemploi/v2/offres/search?range={_min}-{_max}&motsCles=data', headers=header)
         pole_emploi_response = response.json()['resultats']
         
         for job in pole_emploi_response:

@@ -3,7 +3,6 @@
 import streamlit as st
 from controller.dbcontroller import *
 import pandas as pd
-import numpy as np
 import requests
 
 #offres

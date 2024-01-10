@@ -4,6 +4,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 sys.path.append('..')
 from utils.entities import Region, Department, City, Annonce, Source, Contrat, Activity, Job
+from utils.scraper import pole_emploi_scraper
 sys.path.pop()
 
 # Initialize FastAPI app
@@ -67,6 +68,13 @@ def get_source(source_id: int):
         raise HTTPException(status_code=404, detail="Source not found")
     return source
 
+@app.get("/sources/")
+def get_all_sources(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(100, description="Limit", le=10)):
+    sources = Source.find_all(offset=offset, limit=limit)
+    if len(sources) == 0:
+        raise HTTPException(status_code=404, detail="No source found")
+    return sources
+
 @app.get("/contrats/{contrat_id}")
 def get_contrat(contrat_id: int):
     contrat = Contrat.query().filter(Contrat.id == contrat_id).options(joinedload(Contrat.annonces)).first()
@@ -88,4 +96,10 @@ def get_job(job_id: int):
         raise HTTPException(status_code=404, detail="Job not found")
     return job
 
+@app.get("/jobs/scrape/{src}/{nb_annonces}")
+def scrape_annonce(src: str, nb_annonces: int):
+    annonces = pole_emploi_scraper(nb_annonces)
+    if len(annonces) == 0:
+        raise HTTPException(status_code=404, detail="No annonce found")
+    return annonces
 # end
