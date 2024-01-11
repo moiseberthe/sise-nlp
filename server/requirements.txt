@@ -3,3 +3,12 @@ SQLAlchemy==2.0.23
 uvicorn==0.25.0
 requests==2.31.0
 selenium==4.16.0
+nltk
+spacy
+transformers
+gensim
+scikit-learn
+scipy
+textract==1.6.3
+wordcloud
+torch

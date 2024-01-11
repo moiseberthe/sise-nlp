@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import OperationalError
 from database.connector import SessionLocal, engine
-
+from pydantic import BaseModel
 
 Base = declarative_base()
 db = SessionLocal()
@@ -32,6 +32,10 @@ class Entity(Base):
     @classmethod
     def find_all(cls, offset: int = 0, limit: int = 10):
         return db.query(cls).offset(offset).limit(limit).all()
+    
+    @classmethod
+    def find_all2(cls):
+        return db.query(cls).all()
     
     @classmethod
     def delete(cls, id: int):
@@ -165,5 +169,9 @@ class Annonce(Entity):
     city = relationship('City', back_populates='annonces')
     activity = relationship('Activity', back_populates='annonces')
     job = relationship('Job', back_populates='annonces')
+
+
+class Chat(BaseModel):
+    text: str = ''
 
 # end

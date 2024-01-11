@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from env import CLIENT_ID, CLIENT_SECRET
 
 
+
 def get_pole_emploi_access_token():
     url = "https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=%2Fpartenaire"
     headers = {

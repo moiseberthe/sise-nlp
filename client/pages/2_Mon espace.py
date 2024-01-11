@@ -1,14 +1,23 @@
 import streamlit as st
 from controller.dbcontroller import *
-
+import requests
 from datetime import datetime
 
 tab1, tab2 = st.tabs(["matcher mon CV", "Filtrage avancé"])
 
+root="localhost" #"nlp-server"
+
 with tab1:
     st.subheader("CV")
-    with st.expander("See explanation"):
-        st.write("upload your CV to see propositions that match it.")
+    with st.expander("une petite explication"):
+        st.write("matche de votre CV avec les offres que nous avons.")
+    uploaded_file = st.file_uploader("téléverser votre CV", accept_multiple_files=False)
+    if uploaded_file:
+        files = {'file': uploaded_file}
+        urls=requests.post(f'http://{root}:8000/match', files=files).json()["urls"]
+        st.write("Quelques urls d'offres d'emploi que nous vous proposons:")
+        for url in urls:
+            st.write(url)
 
 
 with tab2:
