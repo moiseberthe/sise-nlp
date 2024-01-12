@@ -9,6 +9,7 @@ from wordcloud import WordCloud
 import seaborn as sn
 import numpy as np
 import plotly.express as px
+from fanalysis.ca import CA
 
 root="localhost" #"nlp-server"
 
@@ -26,9 +27,10 @@ try:
 except:
     n_villes= 0
 
-#type de contrat
-contrats= ("cdd", "cdi", "stage", "alternance")
-
+try:
+    sources  = requests.get(f'http://{root}:8000/sources').json()
+except:
+    sources= []
 
 
 st.header("Overview des Offres")
@@ -37,6 +39,47 @@ col1, col2, col3 = st.columns(3)
 col1.metric("les offres", n_offres)
 col2.metric("les villes", n_villes)
 col3.metric("le domaine", "la data")
+
+st.write("")
+st.write("")
+
+st.header("Les différentes sources")
+cols= st.columns(len(sources))
+for i, s in enumerate(sources):
+    cols[i].metric(str(i+1), s['name'])
+
+st.write("")
+st.write("")
+
+contrats= requests.get(f'http://{root}:8000/annonces/contrat').json()
+df_cont= pd.DataFrame(contrats)
+cities= requests.get(f'http://{root}:8000/annonces/city').json()
+df_cit= pd.DataFrame(cities)
+activities= requests.get(f'http://{root}:8000/annonces/activity').json()
+df_act= pd.DataFrame(activities)
+sources2= requests.get(f'http://{root}:8000/annonces/source').json()
+df_sourc= pd.DataFrame(sources2)
+
+col01, col02= st.columns(2)
+
+with col01:
+    st.text("histogramme des types de contrat")
+    fig = px.histogram(df_cont, x="contrat", nbins=20)
+    st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+with col02:
+    st.text("histogramme des types de sources")
+    fig = px.histogram(df_sourc, x="source", nbins=20)
+    st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+st.text("histogrammes des villes concernées")
+fig = px.histogram(df_cit, x="city", nbins=20)
+st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+st.text("histogrammes des différentes activités")
+fig = px.histogram(df_act, x="activity", nbins=20)
+st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
 
 st.write("")
 st.write("")
@@ -52,11 +95,7 @@ cities = cities.json()
 df = pd.DataFrame(cities)
 df['count'] = df['count'] * 100
 
-st.map(df,
-    latitude='gps_lat',
-    longitude='gps_lng',
-    size='count'
-)
+st.map(df, latitude='gps_lat', longitude='gps_lng', size='count')
 
 
 st.write("")
@@ -85,12 +124,6 @@ tsne=requests.get(f'http://{root}:8000/tsne').json()["tsne"]
 clusters=requests.get(f'http://{root}:8000/clustering').json()["clust"]
 tsne= np.array(tsne)
 
-#fig, ax = plt.subplots()
-
-# fig2 = sn.scatterplot(x= tsne[:, 0], y= tsne[:, 1], hue=clusters)
-# for i in range(len(tsne[:,0])):
-#     plt.text(x= tsne[i, 0], y= tsne[i, 1], s=i)
-# st.pyplot(fig2.get_figure())
 
 st.write("dataframe des documents avec composants tsne et groupes d'appartenance")
 
@@ -123,5 +156,22 @@ with tab2:
     ax.view_init(60, 80) 
     st.pyplot(fig)
     
+
+# vect= requests.get(f'http://{root}:8000/vector').json()["vector"]
+# df_vect= pd.DataFrame.from_records(vect)
+# X = df_vect.values
+# my_ca = CA(row_labels=df_vect.index.values, col_labels=df_vect.columns.values)
+# my_ca.fit(X)
+
+# print(my_ca)
+
+# fig= my_ca.mapping_row(num_x_axis=1, num_y_axis=2)
+# st.pyplot(fig)
+
+
+
+
+
+
 
 

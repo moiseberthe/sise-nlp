@@ -16,6 +16,24 @@ def accueil():
     return {"message": "Bienvenu à l'API de notre projet de webscrapping"}
 
 
+@app.get("/annonces/{type}")
+def get_all_annonces(type:str=""):
+    annonces = Annonce.find_all(0, 1000)
+    if len(annonces) == 0:
+        raise HTTPException(status_code=404, detail="No annonce found")
+    else:
+        if type=="contrat":
+            rs=[{"contrat": ann.contrat.name} for ann in annonces]
+        elif type=="city":
+            rs=[{"city": ann.city.name} for ann in annonces]
+        elif type=="activity":
+            rs=[{"activity": ann.activity.name} for ann in annonces]
+        elif type=="source":
+            rs=[{"source": ann.source.name} for ann in annonces]
+    return rs
+
+
+
 @app.get("/annonces")
 def get_all_annonces():
     annonces = Annonce.find_all2()
@@ -122,25 +140,32 @@ def scrape_annonce(src: str, nb_annonces: int):
 
 def load_data():
     offres = Annonce.find_all2()
-    texts= [x.description+" "+x.title+" "+x.company_name+" "+x.profile+" "+x.skills for x in offres]
+    texts= [x.description+" "+x.title+" "+x.company_name+" "+x.profile+" "+x.skills+" "+x.contrat.name+" "+x.city.name for x in offres]
     urls= [x.url for x in offres]
     ids= [x.id for x in offres]
-    net= Nettoyage(algo="nltk", contents=texts, ids=ids, urls=urls, cleaned=True)
+    net= Nettoyage(algo="spacy", contents=texts, ids=ids, urls=urls, cleaned=True)
     return net
+
+
+@app.get("/vector")
+def tfidf():
+    net= load_data()
+    rep= net.getVector()
+    return {"vector": rep.to_json(orient="records") }
 
 @app.post("/chat")
 def chat(chat: Chat):
     net= load_data()
     rep= net.return_n_best_doc(text=chat.text, to_return="url")
     #net.save_objects()
-    res= "\t\n ".join(rep)
-    return {"url": res}
+    #res= "\t\n ".join(rep)
+    return {"url": rep.tolist()}
 
 @app.post("/sentiment")
 def sentiment(chat: Chat):
     net= load_data()
     rep= net.sentiment_analysis(text=chat.text)
-    return {"sentiment":rep}  
+    return {"sentiment":rep}   
 
 @app.get("/sentences")
 def wordcloud():

@@ -16,15 +16,23 @@ prompt = st.chat_input("how can we help you?")
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     rep= requests.post(f'http://{root}:8000/chat', json={"text": prompt}).json()
-    #sentiment= requests.post(f'http://{root}:8000/sentiment', json={"text": prompt}).json()
-    #print(sentiment)
     #get answer
-    answer= "urls qui matchent le mieux avec votre requête: \n"+ rep["url"]
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    answer= rep["url"]
+    sentiment= requests.post(f'http://{root}:8000/sentiment', json={"text": prompt}).json()["sentiment"]
+    if sentiment in ["red" , "tomato"]:
+        st.toast('attention à ce que vous écrivez!!!', icon='😠')
+        st.session_state.messages.append({"role": "assistant", "content": ["veuillez saisir des trucs moins insultants s'il vous plait"]})
+    elif sentiment == "green":
+        st.toast('Trop de positivité dans vos écris!!!', icon='😊')
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+    elif sentiment == "white":
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+        st.toast('un sentiment assez neutre dans vos écris!!!', icon='😐')
+    
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        if message["role"]=="assistant": 
+        if message["role"]=="user": 
             message_placeholder = st.empty()
             full_response = ""
             for chunk in message["content"].split():
@@ -33,6 +41,9 @@ for message in st.session_state.messages:
                 # Add a blinking cursor to simulate typing
                 message_placeholder.markdown(full_response + "▌")
         else:
-            st.markdown(message["content"])
+            if len(message["content"])!=1:
+                st.write("urls qui matchent le mieux avec votre requête: ")
+            for url in message["content"]:
+                st.write(url)
 
 

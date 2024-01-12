@@ -69,11 +69,13 @@ class Nettoyage:
         self.contents= contents
         #score
         self.scores= {"accuracy":[], "precision":[], "rappel":[]}
+        #vector1
         if cleaned:
             #tf idf vectorizer object
             self.tfidfvect= pickle.load(open("./utils/files/tfidfvect.pkl", "rb"))
             #list of cleaned sentences
             self.sentences= pickle.load(open("./utils/files/sentences.pkl", "rb"))
+            self.vector1= self.tfidfvect.transform(self.sentences)
             #kmeans object
             self.kmeans= None
         else:
@@ -81,6 +83,11 @@ class Nettoyage:
             self.tfidfvect= TfidfVectorizer()
             self.tfidfvect.fit(self.sentences)
             self.kmeans= None
+            self.vector1= None
+
+    def getVector(self):
+        df= pd.DataFrame(self.vector1.toarray(), columns=self.tfidfvect.get_feature_names_out())
+        return df
 
     def getSentences(self):
         return self.sentences
@@ -121,14 +128,14 @@ class Nettoyage:
         else:
             prep = self._clean_sent_nltk(text)
         # Create the TF-IDF vectors
-        vector1= self.tfidfvect.transform(self.sentences)
+        self.vector1= self.tfidfvect.transform(self.sentences)
         vector2 = self.tfidfvect.transform([prep])
         # Calculate the cosine similarity
         if self.similarity=='cosine':
-            similarity = cosine_similarity(vector1, vector2)
+            similarity = cosine_similarity(self.vector1, vector2)
             idx= np.argsort(similarity[:, 0])[::-1]
         elif self.similarity=="jaccard":
-            similarity= np.array([jaccard(vect, vector2.toarray()[0]) for vect in vector1.toarray()])
+            similarity= np.array([jaccard(vect, vector2.toarray()[0]) for vect in self.vector1.toarray()])
             idx= np.argsort(similarity)[::-1]
         return idx
     
@@ -217,9 +224,9 @@ class Nettoyage:
         return res
     
     def clustering(self, n_clusters=10):
-        vector1= self.tfidfvect.transform(self.sentences)
+        self.vector1= self.tfidfvect.transform(self.sentences)
         self.kmeans= KMeans(n_clusters=n_clusters, random_state=42, max_iter=100, n_init="auto")
-        self.kmeans.fit(vector1)
+        self.kmeans.fit(self.vector1)
         return self.kmeans.labels_
     
     def cluster_predict(self, text):
@@ -238,8 +245,8 @@ class Nettoyage:
     
     #plot document dispersion with tsne reduction + kmeans group (10)
     def tsne_reduc(self, n_comp=2):
-        vector1= self.tfidfvect.transform(self.sentences)
-        X = vector1.toarray()
+        self.vector1= self.tfidfvect.transform(self.sentences)
+        X = self.vector1.toarray()
         embeddings = TSNE(n_components=n_comp, random_state=42)
         Y = embeddings.fit_transform(X)
         # sn.scatterplot(x= Y[:, 0], y= Y[:, 1], hue=self.clustering())
