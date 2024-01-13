@@ -4,8 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from env import CLIENT_ID, CLIENT_SECRET
-
+from env import CLIENT_ID, CLIENT_SECRET, CHROME_URL
 
 
 def get_pole_emploi_access_token():
@@ -62,7 +61,7 @@ def apec_scraper(nb_jobs=10, in_docker=False):
         options.add_argument('--ignore-certificate-errors')
 
         driver = webdriver.Remote(
-            command_executor='http://chrome:4444/wd/hub',
+            command_executor=f'http://{CHROME_URL}/wd/hub',
             options=options
         )
     else:

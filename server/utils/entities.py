@@ -30,12 +30,13 @@ class Entity(Base):
         return db.query(cls).filter(cls.id == id).first()
     
     @classmethod
-    def find_all(cls, offset: int = 0, limit: int = 10):
-        return db.query(cls).offset(offset).limit(limit).all()
-    
-    @classmethod
-    def find_all2(cls):
-        return db.query(cls).all()
+    def find_all(cls, offset: int = None, limit: int = None):
+        query = db.query(cls)
+        if offset is not None:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+        return query.all()
     
     @classmethod
     def delete(cls, id: int):

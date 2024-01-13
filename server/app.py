@@ -2,6 +2,7 @@ import sys
 from fastapi import FastAPI, HTTPException, Query, File, UploadFile
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
+
 sys.path.append('..')
 from utils.entities import Region, Department, City, Annonce, Source, Contrat, Activity, Job, Chat
 from utils.scraper import pole_emploi_scraper, apec_scraper
@@ -16,15 +17,6 @@ app = FastAPI()
 def accueil():
     return {"message": "Bienvenu à l'API de notre projet de webscrapping"}
 
-@app.get("/annonces/all")
-def get_all_annonces():
-    annonces = Annonce.find_all(0, 1000)
-    if len(annonces) == 0:
-        raise HTTPException(status_code=404, detail="No annonce found")
-    rs=[{"contrat": ann.contrat.name, "city": ann.city.name, "activity": ann.activity.name, "source": ann.source.name} for ann in annonces]
-    return rs
-
-
 @app.get("/annonces/{annonce_id}")
 def get_annonce(annonce_id: int):
     annonce = Annonce.find(annonce_id)
@@ -32,19 +24,36 @@ def get_annonce(annonce_id: int):
         raise HTTPException(status_code=404, detail="Annonce not found")
     return annonce
 
-
-@app.get("/annonces")
-def get_all_annonces():
-    annonces = Annonce.find_all2()
-    if len(annonces) == 0:
-        raise HTTPException(status_code=404, detail="No annonce found")
-    return annonces
-
 @app.get("/annonces/")
-def get_all_annonces(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(10, description="Limit", le=500)):
+def get_all_annonces(
+    offset: int = Query(None, description="Offset", ge=0),
+    limit: int = Query(None, description="Limit", le=500),
+    formated: bool = False
+):
     annonces = Annonce.find_all(offset, limit)
     if len(annonces) == 0:
         raise HTTPException(status_code=404, detail="No annonce found")
+    if formated:
+        return [{"contrat": a.contrat.name, "city": a.city.name, "activity": a.activity.name, "source": a.source.name} for a in annonces]
+    return annonces
+
+@app.get("/annonces/scrape/{src}/{nb_annonces}")
+def scrape_annonces(src: str, nb_annonces: int):
+    annonces = []
+    if (src == "Pôle-emploi"):
+        annonces = pole_emploi_scraper(nb_annonces)
+    elif (src == "APEC"):
+        annonces = apec_scraper(nb_jobs=nb_annonces, in_docker=True)
+    
+    if len(annonces) == 0:
+        raise HTTPException(status_code=404, detail="No annonce found")
+    
+    #mettre dans la base de donnée
+    for job in Annonce.find_all(limit=nb_annonces):
+        Annonce.delete(job.id)
+    annonces = insert_jobs(annonces)
+    #update object
+    update_data(annonces)
     return annonces
 
 @app.get("/regions/{region_id}")
@@ -69,8 +78,10 @@ def get_city(city_id: int):
     return city
 
 @app.get("/cities/")
-def get_all_cities(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(100, description="Limit", le=40000)):
-    
+def get_all_cities(
+    offset: int = Query(0, description="Offset", ge=0),
+    limit: int = Query(100, description="Limit", le=500)
+):
     cities = (
         City.db().query(City, func.count(Annonce.id).label("nb"))
         .outerjoin(Annonce, City.id == Annonce.city_id)
@@ -93,7 +104,7 @@ def get_source(source_id: int):
     return source
 
 @app.get("/sources/")
-def get_all_sources(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(100, description="Limit", le=10)):
+def get_all_sources(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(10, description="Limit", le=10)):
     sources = Source.find_all(offset=offset, limit=limit)
     if len(sources) == 0:
         raise HTTPException(status_code=404, detail="No source found")
@@ -107,7 +118,10 @@ def get_contrat(contrat_id: int):
     return contrat
 
 @app.get("/contrats/")
-def get_all_contrats(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(100, description="Limit", le=10)):
+def get_all_contrats(
+    offset: int = Query(0, description="Offset", ge=0),
+    limit: int = Query(10, description="Limit", le=10)
+):
     contrats = Contrat.find_all(offset=offset, limit=limit)
     if len(contrats) == 0:
         raise HTTPException(status_code=404, detail="No contrat found")
@@ -120,13 +134,6 @@ def get_activity(activity_id: int):
         raise HTTPException(status_code=404, detail="Activity not found")
     return activity
 
-@app.get("/jobs/")
-def get_all_jobs(offset: int = Query(0, description="Offset", ge=0), limit: int = Query(100, description="Limit", le=10)):
-    jobs = Job.find_all(offset=offset, limit=limit)
-    if len(jobs) == 0:
-        raise HTTPException(status_code=404, detail="No job found")
-    return jobs
-
 @app.get("/jobs/{job_id}")
 def get_job(job_id: int):
     job = Job.query().filter(Job.id == job_id).options(joinedload(Job.annonces)).first()
@@ -134,88 +141,79 @@ def get_job(job_id: int):
         raise HTTPException(status_code=404, detail="Job not found")
     return job
 
-@app.get("/jobs/scrape/{src}/{nb_annonces}")
-def scrape_annonce(src: str, nb_annonces: int):
-    annonces=[]
-    if src=="Pôle-emploi":
-        annonces = pole_emploi_scraper(nb_annonces)
-    elif src=="APEC":
-        annonces= apec_scraper(nb_jobs=nb_annonces, in_docker=True)
-    if len(annonces) == 0 or nb_annonces > 0:
-        raise HTTPException(status_code=404, detail="No annonce found")
-    #mettre dans la base de donnée
-    for job in Annonce.find_all(limit=nb_annonces):
-        Annonce.delete(job.id)
-    insert_jobs(annonces)
-    #update object
-    update_data(annonces)
-    return annonces
-
+@app.get("/jobs/")
+def get_all_jobs(
+    offset: int = Query(0, description="Offset", ge=0),
+    limit: int = Query(10, description="Limit", le=100)
+):
+    jobs = Job.find_all(offset=offset, limit=limit)
+    if len(jobs) == 0:
+        raise HTTPException(status_code=404, detail="No job found")
+    return jobs
 
 ##########
 
 def load_data():
-    offres = Annonce.find_all2()
-    texts= [x.description+" "+x.title+" "+x.company_name+" "+x.profile+" "+x.skills+" "+x.contrat.name+" "+x.city.name for x in offres]
-    urls= [x.url for x in offres]
-    ids= [x.id for x in offres]
-    net= Nettoyage(algo="spacy", contents=texts, ids=ids, urls=urls, cleaned=True)
+    annonces = Annonce.find_all()
+    texts = [x.description+" "+x.title+" "+x.company_name+" "+x.profile+" "+x.skills+" "+x.contrat.name+" "+x.city.name for x in annonces]
+    urls = [x.url for x in annonces]
+    ids = [x.id for x in annonces]
+    net = Nettoyage(algo="spacy", contents=texts, ids=ids, urls=urls, cleaned=True)
     return net
 
 def update_data(annonces):
-    texts= [x["description"]+" "+x["title"]+" "+x["company_name"]+" "+x["profile"]+" "+x["skills"]+" "+x["contrat"]+" "+x["location"] for x in annonces]
-    urls= [x.url for x in annonces]
-    ids= [x.id for x in annonces]
-    net= Nettoyage(algo="spacy", contents=texts, ids=ids, urls=urls, cleaned=False)
-    net.return_n_best_doc(text=chat.text, to_return="id")
+    texts = [x.description+" "+x.title+" "+x.company_name+" "+x.profile+" "+x.skills+" "+x.contrat.name+" "+x.city.name for x in annonces]
+    urls = [x.url for x in annonces]
+    ids = [x.id for x in annonces]
+    net = Nettoyage(algo="spacy", contents=texts, ids=ids, urls=urls, cleaned=False)
+    # net.return_n_best_doc(text=chat.text, to_return="id")
     net.save_objects()
-
 
 @app.get("/vector")
 def tfidf():
-    net= load_data()
-    rep= net.getVector()
+    net = load_data()
+    rep = net.getVector()
     return {"vector": rep.to_json(orient="records") }
 
 @app.post("/chat")
 def chat(chat: Chat):
-    net= load_data()
-    rep= net.return_n_best_doc(text=chat.text, to_return="url")
+    net = load_data()
+    rep = net.return_n_best_doc(text=chat.text, to_return="url")
     #net.save_objects()
     #res= "\t\n ".join(rep)
     return {"url": rep.tolist()}
 
 @app.post("/sentiment")
 def sentiment(chat: Chat):
-    net= load_data()
-    rep= net.sentiment_analysis(text=chat.text)
+    net = load_data()
+    rep = net.sentiment_analysis(text=chat.text)
     return {"sentiment":rep}   
 
 @app.get("/sentences")
 def wordcloud():
-    net= load_data()
-    rep= net.getSentences()
+    net = load_data()
+    rep = net.getSentences()
     return {"res": rep}
 
 @app.get("/tsne")
 def tsne():
-    net= load_data() 
-    tsne_r= net.tsne_reduc(3)
+    net = load_data() 
+    tsne_r = net.tsne_reduc(3)
     return {"tsne": tsne_r.tolist()}
 
 @app.get("/clustering")
 def cluster():
-    net= load_data()
-    clust= net.clustering()
+    net = load_data()
+    clust = net.clustering()
     return {"clust": clust.tolist()}
 
 @app.post("/match")
 def match_cvs(file: UploadFile = File(...)):
-    net= load_data()
+    net = load_data()
     file_location = f"./utils/files/{file.filename}"
     with open(file_location, "wb+") as file_object:
         file_object.write(file.file.read())
-    urls= net.match_cv_v2(chemin_fichier=file_location, to_return="url")
+    urls = net.match_cv_v2(chemin_fichier=file_location, to_return="url")
     return {"urls": urls.tolist()}
 
 # end

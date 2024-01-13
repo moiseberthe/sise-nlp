@@ -19,6 +19,7 @@ def find_or_create_job(name):
     return job
 
 def insert_jobs(annonces):
+    inserteds = []
     for annonce in annonces:
         # todo: remove these two lines below
         if(annonce['source'] == 'linkedin'):
@@ -35,7 +36,7 @@ def insert_jobs(annonces):
             except:
                 date = datetime.now()
             
-            Annonce(
+            inserted = Annonce(
                 url=annonce['url'],
                 title=annonce['title'],
                 company_name=annonce['company'],
@@ -49,6 +50,8 @@ def insert_jobs(annonces):
                 contrat_id=Contrat.contracts().get(annonce['contrat'], 5),
                 source_id=Source.sources()[annonce['source']],
             ).create()
+            inserteds.append(inserted)
+    return inserteds
 
 def make_migration():
     Region.create_table()

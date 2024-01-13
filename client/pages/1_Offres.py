@@ -18,7 +18,7 @@ nb_annonces = st.number_input('Nombre d\'annonces', min_value= 10, max_value= 40
 if st.button('rafraichir la liste'):
     st.toast('Rafraichissement en cours!')
     time.sleep(.5)
-    annonces = requests.get(f'http://{server_url}/jobs/scrape/{source}/{nb_annonces}')
+    annonces = requests.get(f'http://{server_url}/annonces/scrape/{source}/{nb_annonces}')
     st.toast('chargement....!')
     time.sleep(.5)
     annonces = annonces.json()

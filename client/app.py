@@ -50,7 +50,7 @@ for i, s in enumerate(sources[:2]):
 st.write("")
 st.write("")
 
-contrats= requests.get(f'http://{server_url}/annonces/all').json()
+contrats= requests.get(f'http://{server_url}/annonces/?formated=True').json()
 df_all= pd.DataFrame(contrats)
 
 col01, col02= st.columns(2)
@@ -79,13 +79,12 @@ st.header("Répartition des offres par villes")
 # mois = st.slider('Mois concernés', 1, 31, (1, 31))
 # options = st.multiselect('types de contrat', contrats)
 
-cities = requests.get(f'http://{server_url}/cities/?offset=0&limit=4000')
+cities = requests.get(f'http://{server_url}/cities/?offset=0&limit=400')
 cities = cities.json()
 df = pd.DataFrame(cities)
 df['count'] = df['count'] * 100
 
 st.map(df, latitude='gps_lat', longitude='gps_lng', size='count')
-
 
 st.write("")
 st.write("")

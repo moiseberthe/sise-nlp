@@ -97,28 +97,3 @@ with tab2:
                 )
         else:
             st.toast("veuillez saisir tous les champs étoilés")
-
-    # if len(st.session_state.result) >0:
-    #     for rep in st.session_state.result:
-    #         job= [off for off in offres if off["url"]==rep][0]
-    #         cd= card(
-    #             key= job["id"]*100,
-    #             title=job["title"],
-    #             text=["Entreprise: "+job["company_name"], "contrat: "+job["contrat"]["name"], "Lieu: "+job["city"]["name"]],
-    #             #image="https://placekitten.com/500/500",
-    #             url=job["url"],
-    #             styles={
-    #                 "card": {
-    #                     "width": "100%", "height": "300px", "border-radius": "60px",
-    #                     "box-shadow": "0 0 10px rgba(0,0,0,0.5)", "background-color": "white"
-    #                 },
-    #                 "text": {
-    #                     "font-family": "serif"
-    #                 }
-    #             }
-    #         )
-
-    
-
-
-

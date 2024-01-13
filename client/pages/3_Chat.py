@@ -1,7 +1,6 @@
 
 
 import streamlit as st
-import random
 import time
 import requests
 from env import server_url
