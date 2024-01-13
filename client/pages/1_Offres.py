@@ -13,7 +13,7 @@ sources = sources.json()
 source = st.selectbox(
     'Source',
     tuple([s['name'] for s in sources[:2]]))
-nb_annonces = st.number_input('Nombre d\'annonces')
+nb_annonces = st.number_input('Nombre d\'annonces', min_value= 10, max_value= 400)
 
 if st.button('rafraichir la liste'):
     st.toast('Rafraichissement en cours!')

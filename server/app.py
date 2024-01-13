@@ -135,7 +135,7 @@ def get_job(job_id: int):
     return job
 
 @app.get("/jobs/scrape/{src}/{nb_annonces}")
-def scrape_annonce(src: str, nb_annonces: int= Query(100, description="nombre d'annonce", ge=10)):
+def scrape_annonce(src: str, nb_annonces: int):
     annonces=[]
     if src=="Pôle-emploi":
         annonces = pole_emploi_scraper(nb_annonces)
