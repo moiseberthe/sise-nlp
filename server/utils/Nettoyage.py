@@ -20,22 +20,16 @@ import spacy
 from transformers import pipeline, AutoTokenizer
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from gensim.models import Word2Vec
 import gensim 
 from gensim import corpora
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import MultinomialNB, ComplementNB
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.spatial.distance import jaccard
-from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import seaborn as sn
 import urllib
 import textract
-from wordcloud import WordCloud
+# from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import pickle
 from random import randint
@@ -164,11 +158,11 @@ class Nettoyage:
         tops= ldamodel.print_topics(num_topics=3, num_words=3)
         return tops
 
-    def display_word_cloud(self):
-        wordcloud = WordCloud().generate(" ".join(self.sentences))
-        plt.imshow(wordcloud, interpolation='bilinear')
-        plt.axis("off")
-        plt.show()
+    # def display_word_cloud(self):
+    #     wordcloud = WordCloud().generate(" ".join(self.sentences))
+    #     plt.imshow(wordcloud, interpolation='bilinear')
+    #     plt.axis("off")
+    #     plt.show()
 
     def save_objects(self):
         if len(self.sentences) > 0:

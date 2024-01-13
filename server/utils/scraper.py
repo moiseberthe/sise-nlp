@@ -52,11 +52,21 @@ def get_range(n, step=150):
         ranges.append((min_i, max_i))
     return ranges
 
-def apec_scraper(nb_jobs=10):
+def apec_scraper(nb_jobs=10, in_docker=False):
     job_page_url = 'https://www.apec.fr/candidat/recherche-emploi.html/emploi?motsCles=data&typesConvention=143684&typesConvention=143685&typesConvention=143686&typesConvention=143687'
     jobs_apec = []
     
-    driver = webdriver.Chrome()
+    if in_docker:
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-ssl-errors=yes')
+        options.add_argument('--ignore-certificate-errors')
+
+        driver = webdriver.Remote(
+            command_executor='http://chrome:4444/wd/hub',
+            options=options
+        )
+    else:
+        driver = webdriver.Chrome()
     CSS = By.CSS_SELECTOR
     nb_pages = (nb_jobs // 20) + min(1, nb_jobs % 20)
     for i in range(nb_pages):

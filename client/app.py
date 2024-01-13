@@ -9,26 +9,25 @@ from wordcloud import WordCloud
 import seaborn as sn
 import numpy as np
 import plotly.express as px
-from fanalysis.ca import CA
+from env import server_url
 
-root="localhost" #"nlp-server"
 
 #offres
 try:
-    offres   = requests.get(f'http://{root}:8000/annonces').json()
+    offres   = requests.get(f'http://{server_url}/annonces').json()
     n_offres = len(offres) 
 except:
     n_offres= 0
 
 #villes
 try:
-    villes   = requests.get(f'http://{root}:8000/cities/?offset=0&limit=4000').json()
+    villes   = requests.get(f'http://{server_url}/cities/?offset=0&limit=4000').json()
     n_villes = len(villes)
 except:
     n_villes= 0
 
 try:
-    sources  = requests.get(f'http://{root}:8000/sources').json()
+    sources  = requests.get(f'http://{server_url}/sources').json()
 except:
     sources= []
 
@@ -44,40 +43,30 @@ st.write("")
 st.write("")
 
 st.header("Les différentes sources")
-cols= st.columns(len(sources))
-for i, s in enumerate(sources):
+cols= st.columns(len(sources[:2]))
+for i, s in enumerate(sources[:2]):
     cols[i].metric(str(i+1), s['name'])
 
 st.write("")
 st.write("")
 
-contrats= requests.get(f'http://{root}:8000/annonces/contrat').json()
-df_cont= pd.DataFrame(contrats)
-cities= requests.get(f'http://{root}:8000/annonces/city').json()
-df_cit= pd.DataFrame(cities)
-activities= requests.get(f'http://{root}:8000/annonces/activity').json()
-df_act= pd.DataFrame(activities)
-sources2= requests.get(f'http://{root}:8000/annonces/source').json()
-df_sourc= pd.DataFrame(sources2)
+contrats= requests.get(f'http://{server_url}/annonces/all').json()
+df_all= pd.DataFrame(contrats)
 
 col01, col02= st.columns(2)
 
 with col01:
     st.text("histogramme des types de contrat")
-    fig = px.histogram(df_cont, x="contrat", nbins=20)
+    fig = px.histogram(df_all, x="contrat", nbins=20)
     st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
 with col02:
     st.text("histogramme des types de sources")
-    fig = px.histogram(df_sourc, x="source", nbins=20)
+    fig = px.histogram(df_all, x="source", nbins=20)
     st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
 st.text("histogrammes des villes concernées")
-fig = px.histogram(df_cit, x="city", nbins=20)
-st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-st.text("histogrammes des différentes activités")
-fig = px.histogram(df_act, x="activity", nbins=20)
+fig = px.histogram(df_all, x="city", nbins=20)
 st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
 
@@ -90,7 +79,7 @@ st.header("Répartition des offres par villes")
 # mois = st.slider('Mois concernés', 1, 31, (1, 31))
 # options = st.multiselect('types de contrat', contrats)
 
-cities = requests.get(f'http://{root}:8000/cities/?offset=0&limit=4000')
+cities = requests.get(f'http://{server_url}/cities/?offset=0&limit=4000')
 cities = cities.json()
 df = pd.DataFrame(cities)
 df['count'] = df['count'] * 100
@@ -105,7 +94,7 @@ st.header("Nuage de mots de notre corpus")
 with st.expander("petite explication"):
     st.write("(il s'agit de mots du corpus nettoyé avec nltk et racinisé)")
 
-wordc= requests.get(f'http://{root}:8000/sentences').json()
+wordc= requests.get(f'http://{server_url}/sentences').json()
 wordcloud = WordCloud().generate(" ".join(wordc["res"]))
 fig, ax = plt.subplots()
 ax.imshow(wordcloud, interpolation='bilinear')
@@ -120,8 +109,8 @@ st.header("Répartition de nos documents")
 with st.expander("petite explication"):
     st.write("(tsne des documents reparti sur 2 composants et coloré par leurs clusters d'appartenance (kmeans sur 10 classes))")
 
-tsne=requests.get(f'http://{root}:8000/tsne').json()["tsne"]
-clusters=requests.get(f'http://{root}:8000/clustering').json()["clust"]
+tsne=requests.get(f'http://{server_url}/tsne').json()["tsne"]
+clusters=requests.get(f'http://{server_url}/clustering').json()["clust"]
 tsne= np.array(tsne)
 
 
@@ -157,16 +146,6 @@ with tab2:
     st.pyplot(fig)
     
 
-# vect= requests.get(f'http://{root}:8000/vector').json()["vector"]
-# df_vect= pd.DataFrame.from_records(vect)
-# X = df_vect.values
-# my_ca = CA(row_labels=df_vect.index.values, col_labels=df_vect.columns.values)
-# my_ca.fit(X)
-
-# print(my_ca)
-
-# fig= my_ca.mapping_row(num_x_axis=1, num_y_axis=2)
-# st.pyplot(fig)
 
 
 

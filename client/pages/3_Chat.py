@@ -4,10 +4,9 @@ import streamlit as st
 import random
 import time
 import requests
+from env import server_url
 
 prompts= []
-
-root="localhost" #"nlp-server"
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -15,10 +14,10 @@ if "messages" not in st.session_state:
 prompt = st.chat_input("how can we help you?")
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
-    rep= requests.post(f'http://{root}:8000/chat', json={"text": prompt}).json()
+    rep= requests.post(f'http://{server_url}/chat', json={"text": prompt}).json()
     #get answer
     answer= rep["url"]
-    sentiment= requests.post(f'http://{root}:8000/sentiment', json={"text": prompt}).json()["sentiment"]
+    sentiment= requests.post(f'http://{server_url}/sentiment', json={"text": prompt}).json()["sentiment"]
     if sentiment in ["red" , "tomato"]:
         st.toast('attention à ce que vous écrivez!!!', icon='😠')
         st.session_state.messages.append({"role": "assistant", "content": ["veuillez saisir des trucs moins insultants s'il vous plait"]})

@@ -1,6 +1,16 @@
 version: '3'
 
 services:
+
+    chrome:
+        image: selenium/standalone-chrome
+        container_name: chrome
+        platform: linux/amd64
+        ports:
+        - "4444:4444"
+        volumes:
+        - /dev/shm:/dev/shm
+
     client:
         image: nlp-client
         container_name: nlp-client

@@ -3,23 +3,22 @@ import time
 from controller.dbcontroller import *
 import requests
 import pandas as pd
-
-root="localhost" #"nlp-server"
+from env import server_url
 
 st.subheader("Listes des offres")
 
-sources = requests.get(f'http://{root}:8000/sources/?offset=0&limit=10')
+sources = requests.get(f'http://{server_url}/sources/?offset=0&limit=10')
 sources = sources.json()
 
 source = st.selectbox(
     'Source',
-    tuple([s['name'] for s in sources]))
+    tuple([s['name'] for s in sources[:2]]))
 nb_annonces = st.number_input('Nombre d\'annonces')
 
 if st.button('rafraichir la liste'):
     st.toast('Rafraichissement en cours!')
     time.sleep(.5)
-    annonces = requests.get(f'http://{root}:8000/jobs/scrape/{source}/{nb_annonces}')
+    annonces = requests.get(f'http://{server_url}/jobs/scrape/{source}/{nb_annonces}')
     st.toast('chargement....!')
     time.sleep(.5)
     annonces = annonces.json()
