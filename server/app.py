@@ -52,8 +52,9 @@ def scrape_annonces(src: str, nb_annonces: int):
     for job in Annonce.find_all(limit=nb_annonces):
         Annonce.delete(job.id)
     annonces = insert_jobs(annonces)
+    all_ann = Annonce.find_all()
     #update object
-    update_data(annonces)
+    update_data(all_ann)
     return annonces
 
 @app.get("/regions/{region_id}")
@@ -166,7 +167,7 @@ def update_data(annonces):
     urls = [x.url for x in annonces]
     ids = [x.id for x in annonces]
     net = Nettoyage(algo="spacy", contents=texts, ids=ids, urls=urls, cleaned=False)
-    # net.return_n_best_doc(text=chat.text, to_return="id")
+    net.return_n_best_doc(text="data", to_return="id", n=2)
     net.save_objects()
 
 @app.get("/vector")

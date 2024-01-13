@@ -12,6 +12,11 @@ import plotly.express as px
 from env import server_url
 
 
+cities = requests.get(f'http://{server_url}/cities/?offset=0&limit=400')
+cities = cities.json()
+df = pd.DataFrame(cities)
+df['count'] = df['count'] * 100
+
 #offres
 try:
     offres   = requests.get(f'http://{server_url}/annonces').json()
@@ -21,7 +26,7 @@ except:
 
 #villes
 try:
-    villes   = requests.get(f'http://{server_url}/cities/?offset=0&limit=4000').json()
+    villes   = df.name.unique()
     n_villes = len(villes)
 except:
     n_villes= 0
@@ -79,10 +84,7 @@ st.header("Répartition des offres par villes")
 # mois = st.slider('Mois concernés', 1, 31, (1, 31))
 # options = st.multiselect('types de contrat', contrats)
 
-cities = requests.get(f'http://{server_url}/cities/?offset=0&limit=400')
-cities = cities.json()
-df = pd.DataFrame(cities)
-df['count'] = df['count'] * 100
+
 
 st.map(df, latitude='gps_lat', longitude='gps_lng', size='count')
 
