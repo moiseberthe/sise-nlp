@@ -16,5 +16,4 @@ matplotlib==3.8.2
 seaborn==0.13.1
 numpy==1.26.3
 python-multipart==0.0.6
-torch==2.1.2
 protobuf==4.23.4

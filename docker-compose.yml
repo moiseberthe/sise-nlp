@@ -12,6 +12,7 @@ services:
         - /dev/shm:/dev/shm
     
     server:
+        platform: linux/amd64
         image: nlp-server
         container_name: nlp-server
         build:
@@ -21,6 +22,7 @@ services:
         - 8000:8000
 
     client:
+        platform: linux/amd64
         image: nlp-client
         container_name: nlp-client
         build:

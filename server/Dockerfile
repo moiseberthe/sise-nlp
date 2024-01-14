@@ -7,9 +7,7 @@ RUN pip install -r requirements.txt
 
 COPY . /app/
 
-# WORKDIR /app
-RUN python test.py
-
-
+RUN python -m nltk.downloader stopwords
+RUN python -m spacy download fr_core_news_sm
 
 CMD ["uvicorn", "--host", "0.0.0.0", "app:app"]
