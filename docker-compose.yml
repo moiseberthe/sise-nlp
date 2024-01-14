@@ -1,16 +1,18 @@
 version: '3'
 
 services:
-    client:
-        image: nlp-client
-        container_name: nlp-client
-        build:
-            context: ./client
-            dockerfile: Dockerfile
+
+    chrome:
+        image: selenium/standalone-chrome
+        container_name: chrome
+        platform: linux/amd64
         ports:
-        - 8501:8501
+        - 4444:4444
+        volumes:
+        - /dev/shm:/dev/shm
     
     server:
+        platform: linux/amd64
         image: nlp-server
         container_name: nlp-server
         build:
@@ -18,3 +20,13 @@ services:
             dockerfile: Dockerfile
         ports:
         - 8000:8000
+
+    client:
+        platform: linux/amd64
+        image: nlp-client
+        container_name: nlp-client
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+        ports:
+        - 8501:8501
