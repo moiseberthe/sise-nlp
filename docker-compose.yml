@@ -7,7 +7,7 @@ services:
         container_name: chrome
         platform: linux/amd64
         ports:
-        - "4444:4444"
+        - 4444:4444
         volumes:
         - /dev/shm:/dev/shm
     
