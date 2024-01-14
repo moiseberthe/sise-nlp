@@ -98,11 +98,11 @@ def make_migration():
             gps_lng=city['gps_lng'],
         ).create()
 
-    # Insertion des annonces de job
-    with open('./data/processed/all-jobs.json', 'r+') as f:
-        jobs = json.load(f)
+    # # Insertion des annonces de job
+    # with open('./data/processed/all-jobs.json', 'r+') as f:
+    #     jobs = json.load(f)
 
-    insert_jobs(jobs)
+    # insert_jobs(jobs)
 
     
     

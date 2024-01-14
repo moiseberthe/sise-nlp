@@ -1,7 +1,7 @@
 import sys
-from fastapi import FastAPI, HTTPException, Query, File, UploadFile
+from fastapi import FastAPI, HTTPException, Query, File, UploadFile, Path
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 sys.path.append('..')
 from utils.entities import Region, Department, City, Annonce, Source, Contrat, Activity, Job, Chat
@@ -37,6 +37,40 @@ def get_all_annonces(
         return [{"contrat": a.contrat.name, "city": a.city.name, "activity": a.activity.name, "source": a.source.name} for a in annonces]
     return annonces
 
+@app.get("/annonces/{region}/{department}/{job}/{contrat}/{activity}")
+def get_filtred_annonces(
+   region: str = Path(..., title="Region", description="La région"),
+   department: str = Path(..., title="Department", description="Le department"),
+   job: str = Path(..., title="Job", description="Le poste"),
+   contrat: str = Path(..., title="Contrat", description="Le type de contrat"),
+   activity: str = Path(..., title="Activity", description="Le domainde d'activité"),
+):
+   default_option = '00'
+   filters = [
+      (Region.id == region) if region != default_option else None,
+      (Department.code == department) if department != default_option else None,
+      (Annonce.job_id == int(job)) if job != default_option else None,
+      (Annonce.contrat_id == int(contrat)) if contrat != default_option else None,
+      (Annonce.activity_id == int(activity)) if activity != default_option else None
+   ]
+   filters = [f for f in filters if f is not None]
+   
+   annonces = (Annonce.db().query(Annonce, City.name, City.gps_lat, City.gps_lng, Department.name, Region.name, Contrat.name, Source.name)
+      .outerjoin(City, City.id == Annonce.city_id)
+      .outerjoin(Source, Source.id == Annonce.source_id)
+      .outerjoin(Contrat, Contrat.id == Annonce.contrat_id)
+      .outerjoin(Department,  City.department_code == Department.code)
+      .outerjoin(Region, Region.code == Department.region_code)
+      .filter(*filters)
+   )
+   return [
+      {
+         **a.__dict__,
+         **{'city': city, 'gps_lat': lat, 'gps_lng': lng,  'departement': dept, 'region': region, 'contrat': contrat, 'source': source}
+      }
+      for a, city, lat, lng, dept, region, contrat, source in annonces
+   ]
+
 @app.get("/annonces/scrape/{src}/{nb_annonces}")
 def scrape_annonces(src: str, nb_annonces: int):
     annonces = []
@@ -57,12 +91,32 @@ def scrape_annonces(src: str, nb_annonces: int):
     update_data(all_ann)
     return annonces
 
+@app.get("/regions")
+def get_all_regions(
+    offset: int = Query(0, description="Offset", ge=0),
+    limit: int = Query(20, description="Limit", le=20)
+):
+    regions = Region.find_all(offset=offset, limit=limit)
+    if len(regions) == 0:
+        raise HTTPException(status_code=404, detail="No region found")
+    return regions
+
 @app.get("/regions/{region_id}")
 def get_region(region_id: int):
     region = Region.query().filter(Region.id == region_id).options(joinedload(Region.departments)).first()
     if region is None:
         raise HTTPException(status_code=404, detail="Region not found")
     return region
+
+@app.get("/departments")
+def get_all_departments(
+    offset: int = Query(0, description="Offset", ge=0),
+    limit: int = Query(20, description="Limit", le=20)
+):
+    departments = Region.find_all(offset=offset, limit=limit)
+    if len(departments) == 0:
+        raise HTTPException(status_code=404, detail="No department found")
+    return departments
 
 @app.get("/departments/{department_id}")
 def get_department(department_id: int):
@@ -118,7 +172,7 @@ def get_contrat(contrat_id: int):
         raise HTTPException(status_code=404, detail="Contrat not found")
     return contrat
 
-@app.get("/contrats/")
+@app.get("/contrats")
 def get_all_contrats(
     offset: int = Query(0, description="Offset", ge=0),
     limit: int = Query(10, description="Limit", le=10)
@@ -135,6 +189,16 @@ def get_activity(activity_id: int):
         raise HTTPException(status_code=404, detail="Activity not found")
     return activity
 
+@app.get("/activities")
+def get_all_activities(
+    offset: int = Query(0, description="Offset", ge=0),
+    limit: int = Query(150, description="Limit", le=150)
+):
+    activities = Activity.find_all(offset=offset, limit=limit)
+    if len(activities) == 0:
+        raise HTTPException(status_code=404, detail="No activity found")
+    return activities
+
 @app.get("/jobs/{job_id}")
 def get_job(job_id: int):
     job = Job.query().filter(Job.id == job_id).options(joinedload(Job.annonces)).first()
@@ -142,10 +206,10 @@ def get_job(job_id: int):
         raise HTTPException(status_code=404, detail="Job not found")
     return job
 
-@app.get("/jobs/")
+@app.get("/jobs")
 def get_all_jobs(
     offset: int = Query(0, description="Offset", ge=0),
-    limit: int = Query(10, description="Limit", le=100)
+    limit: int = Query(150, description="Limit", le=150)
 ):
     jobs = Job.find_all(offset=offset, limit=limit)
     if len(jobs) == 0:

@@ -1,6 +1,9 @@
 # Docker project with Streamlit, FastAPI and SQLite
 
-This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `SQLite` in `Docker` containers.<br>
+
+This project is part of a course in Text Mining, an exciting discipline that explores text analysis techniques for extracting meaningful information. Carried out in a school context, this project aims to apply the concepts and methodologies learned in class to a concrete application.<br>
+<!-- This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `SQLite` in `Docker` containers. -->
+<br>
 
 ## Prerequisites
 
