@@ -90,8 +90,8 @@ class Nettoyage:
         sent= sentence.lower()
         sent= sent.replace("’", " ")
         doc= nlp(sent)
-        stw = set([*stopwords.words('french'), "être"])
-        tab= [mot.lemma_ for mot in doc if not (mot.is_punct or mot.is_space or mot.is_stop or mot.like_url or len(mot)<=2 or mot.is_digit or mot in stw)]
+        stw = set([*stopwords.words('french'), "avoir", "être", "data", "dater", "données", "donnée"])
+        tab= [mot.lemma_ for mot in doc if not (mot.is_punct or mot.is_space or mot.is_stop or mot.like_url or len(mot)<=2 or mot.is_digit or mot in stw or mot.lemma_ in stw)]
         return " ".join(tab)
     
     def _clean_sent_nltk(self, sentence):
