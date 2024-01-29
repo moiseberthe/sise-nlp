@@ -191,7 +191,7 @@ def pole_emploi_scraper(nb_jobs=200):
                 'activity': job.get('secteurActiviteLibelle', 'Unknown'),
                 'source': 'pole-emploi',
             })
-        time.sleep(1)
+        time.sleep(0.3)
     return jobs_pole_emploi
 
 # end
