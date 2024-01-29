@@ -46,7 +46,7 @@ with cols[1]:
 
 with cols[2]:
    jobs = requests.get(f'http://{server_url}/jobs').json()
-   choices = {row['id'] : row['id'] for row in jobs}
+   choices = {row['id'] : row['name'] for row in jobs}
    choices = {**defaultOption, **choices}
 
    job = st.selectbox(
