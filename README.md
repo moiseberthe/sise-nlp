@@ -1,6 +1,9 @@
 # Docker project with Streamlit, FastAPI and SQLite
 
-This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `SQLite` in `Docker` containers.<br>
+
+This project is part of a course in Text Mining, an exciting discipline that explores text analysis techniques for extracting meaningful information. Carried out in a school context, this project aims to apply the concepts and methodologies learned in class to a concrete application.<br>
+<!-- This project is a demonstration of using Docker Compose to run a `Python` application consisting of `Streamlit`, `FastAPI`, and `SQLite` in `Docker` containers. -->
+<br>
 
 ## Prerequisites
 
@@ -43,3 +46,24 @@ The project will be accessible at the following address:
 
 - Streamlit: [http://localhost:8501](http://localhost:8501)
 - FastAPI: [http://localhost:8000](http://localhost:8000)
+
+## Push images on Docker Hub
+### Server
+
+```bash
+docker tag nlp-server:latest moiseberthe/nlp-server:latest
+```
+
+```bash
+docker push moiseberthe/nlp-server:latest
+```
+
+### Client
+
+```bash
+docker tag nlp-client:latest moiseberthe/nlp-client:latest
+```
+
+```bash
+docker push moiseberthe/nlp-client:latest
+```
